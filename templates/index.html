@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Image Captioning</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, #312e81, transparent 35%),
+                radial-gradient(circle at bottom right, #0e7490, transparent 35%),
+                #080b18;
+            color: white;
+            padding: 40px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            margin: auto;
+        }
+
+        /* Header */
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 30px;
+            background: rgba(255,255,255,0.08);
+            font-size: 13px;
+            margin-bottom: 18px;
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 12px;
+            background: linear-gradient(90deg, #ffffff, #a5b4fc, #67e8f9);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #cbd5e1;
+            font-size: 18px;
+        }
+
+        /* Main card */
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+        }
+
+        /* Upload area */
+
+        .upload-area {
+            border: 2px dashed rgba(165, 180, 252, 0.5);
+            border-radius: 18px;
+            padding: 40px 20px;
+            text-align: center;
+            background: rgba(255,255,255,0.04);
+            transition: 0.3s;
+        }
+
+        .upload-area:hover {
+            border-color: #67e8f9;
+            background: rgba(255,255,255,0.08);
+        }
+
+        .upload-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .upload-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: auto;
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            border-radius: 10px;
+            background: white;
+            color: #111827;
+            cursor: pointer;
+        }
+
+        /* Button */
+
+        .button-container {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+            border-radius: 12px;
+            padding: 14px 32px;
+            font-size: 17px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            background: linear-gradient(90deg, #6366f1, #06b6d4);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.25);
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(6, 182, 212, 0.4);
+        }
+
+        /* Error */
+
+        .error {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+            text-align: center;
+        }
+
+        /* Result */
+
+        .result {
+            margin-top: 35px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            margin-bottom: 18px;
+        }
+
+        .image-box {
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 18px;
+        }
+
+        .image-box img {
+            max-width: 100%;
+            max-height: 450px;
+            border-radius: 14px;
+            object-fit: contain;
+        }
+
+        /* Caption */
+
+        .caption-box {
+            margin-top: 25px;
+            padding: 25px;
+            border-radius: 18px;
+            background: linear-gradient(
+                135deg,
+                rgba(99, 102, 241, 0.18),
+                rgba(6, 182, 212, 0.12)
+            );
+            border: 1px solid rgba(165, 180, 252, 0.25);
+        }
+
+        .caption-label {
+            color: #67e8f9;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .caption-text {
+            font-size: 21px;
+            line-height: 1.6;
+            color: #f8fafc;
+        }
+
+        /* Footer */
+
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        /* Mobile */
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 25px 12px;
+            }
+
+            h1 {
+                font-size: 36px;
+            }
+
+            .subtitle {
+                font-size: 15px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 30px 15px;
+            }
+
+            .caption-text {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Header -->
+
+    <div class="header">
+
+        <div class="badge">
+            ✨ Powered by AI
+        </div>
+
+        <h1>AI Image Captioning</h1>
+
+        <p class="subtitle">
+            Upload an image and let artificial intelligence describe it.
+        </p>
+
+    </div>
+
+
+    <!-- Main -->
+
+    <div class="card">
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <div class="upload-area">
+
+                <div class="upload-icon">
+                    🖼️
+                </div>
+
+                <div class="upload-title">
+                    Upload Your Image
+                </div>
+
+                <div class="upload-text">
+                    Choose an image and generate an AI-powered caption
+                </div>
+
+                <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    required
+                >
+
+            </div>
+
+
+            <div class="button-container">
+
+                <button type="submit">
+                    ✨ Generate Caption
+                </button>
+
+            </div>
+
+        </form>
+
+
+        {% if error %}
+
+            <div class="error">
+                ⚠️ {{ error }}
+            </div>
+
+        {% endif %}
+
+
+        {% if image_path %}
+
+            <div class="result">
+
+                <h2 class="section-title">
+                    🖼️ Uploaded Image
+                </h2>
+
+                <div class="image-box">
+
+                    <img
+                        src="{{ image_path }}"
+                        alt="Uploaded Image"
+                    >
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+
+        {% if caption %}
+
+            <div class="caption-box">
+
+                <div class="caption-label">
+                    🤖 AI Generated Caption
+                </div>
+
+                <p class="caption-text">
+                    "{{ caption }}"
+                </p>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <div class="footer">
+        Built with Flask • PyTorch • Hugging Face BLIP
+    </div>
+
+</div>
+
+</body>
+</html>
